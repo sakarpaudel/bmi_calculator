@@ -32,9 +32,8 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
 
   void calculateBMI() {
     try {
-      if (heightFeetController.text.isEmpty ||
-          heightInchesController.text.isEmpty ||
-          weightKgController.text.isEmpty) {
+      if ([heightFeetController, heightInchesController, weightKgController]
+          .any((controller) => controller.text.isEmpty)) {
         throw Exception("Please enter all values for height and weight.");
       }
 
@@ -46,12 +45,12 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
         throw Exception("Height and weight must be positive values.");
       }
 
-      double heightCm = convertFeetInchesToCm(heightFeet, heightInches);
+      double heightCm = (heightFeet * 30.48) + (heightInches * 2.54);
 
       double bmi = weightKg / (heightCm * heightCm / 10000);
       setState(() {
         bmiResult = bmi;
-        healthCategory = getHealthCategory(bmi);
+        healthCategory = _getHealthCategory(bmi);
         errorMessage = null;
       });
     } catch (e) {
@@ -63,16 +62,12 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
     }
   }
 
-  double convertFeetInchesToCm(double feet, double inches) {
-    return (feet * 30.48) + (inches * 2.54);
-  }
-
-  String getHealthCategory(double bmi) {
+  String _getHealthCategory(double bmi) {
     if (bmi < 18.5) {
       return "Underweight";
-    } else if (bmi >= 18.5 && bmi < 25) {
+    } else if (bmi < 25) {
       return "Normal";
-    } else if (bmi >= 25 && bmi < 30) {
+    } else if (bmi < 30) {
       return "Overweight";
     } else {
       return "Obese";
@@ -100,48 +95,28 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Expanded(
-                  child: TextField(
+                  child: _buildTextField(
                     controller: heightFeetController,
-                    keyboardType: TextInputType.number,
-                    style: TextStyle(fontSize: 20),
-                    decoration: InputDecoration(
-                      labelText: 'Feet',
-                      labelStyle: TextStyle(fontSize: 18),
-                      border: OutlineInputBorder(),
-                    ),
+                    label: 'Feet',
                   ),
                 ),
                 SizedBox(width: 20),
                 Expanded(
-                  child: TextField(
+                  child: _buildTextField(
                     controller: heightInchesController,
-                    keyboardType: TextInputType.number,
-                    style: TextStyle(fontSize: 20),
-                    decoration: InputDecoration(
-                      labelText: 'Inches',
-                      labelStyle: TextStyle(fontSize: 18),
-                      border: OutlineInputBorder(),
-                    ),
+                    label: 'Inches',
                   ),
                 ),
               ],
             ),
             SizedBox(height: 20),
-            TextField(
+            _buildTextField(
               controller: weightKgController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(fontSize: 20),
-              decoration: InputDecoration(
-                labelText: 'Enter Weight (kg)',
-                labelStyle: TextStyle(fontSize: 18),
-                border: OutlineInputBorder(),
-              ),
+              label: 'Weight (kg)',
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                calculateBMI();
-              },
+              onPressed: calculateBMI,
               style: ElevatedButton.styleFrom(
                 primary: Colors.pink,
                 padding: EdgeInsets.symmetric(vertical: 15),
@@ -160,21 +135,38 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
             bmiResult != null && healthCategory != null
                 ? Column(
               children: [
-                Text(
-                  'BMI Result: ${bmiResult!.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 18),
-                ),
+                _buildResultText('BMI Result: ${bmiResult!.toStringAsFixed(2)}'),
                 SizedBox(height: 10),
-                Text(
-                  'Health Category: $healthCategory',
-                  style: TextStyle(fontSize: 18),
-                ),
+                _buildResultText('Health Category: $healthCategory'),
               ],
             )
                 : Container(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      style: TextStyle(fontSize: 20),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(fontSize: 18),
+        border: OutlineInputBorder(),
+      ),
+    );
+  }
+
+  Widget _buildResultText(String text) {
+    return Text(
+      text,
+      style: TextStyle(fontSize: 18),
     );
   }
 }
