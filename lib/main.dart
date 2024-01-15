@@ -25,7 +25,7 @@ class BMICalculatorScreen extends StatefulWidget {
 class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
   TextEditingController heightFeetController = TextEditingController();
   TextEditingController heightInchesController = TextEditingController();
-  TextEditingController weightPoundsController = TextEditingController();
+  TextEditingController weightKgController = TextEditingController();
   double? bmiResult;
   String? healthCategory;
   String? errorMessage;
@@ -34,20 +34,19 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
     try {
       if (heightFeetController.text.isEmpty ||
           heightInchesController.text.isEmpty ||
-          weightPoundsController.text.isEmpty) {
+          weightKgController.text.isEmpty) {
         throw Exception("Please enter all values for height and weight.");
       }
 
       double heightFeet = double.parse(heightFeetController.text);
       double heightInches = double.parse(heightInchesController.text);
-      double weightPounds = double.parse(weightPoundsController.text);
+      double weightKg = double.parse(weightKgController.text);
 
-      if (heightFeet <= 0 || heightInches < 0 || weightPounds <= 0) {
+      if (heightFeet <= 0 || heightInches < 0 || weightKg <= 0) {
         throw Exception("Height and weight must be positive values.");
       }
 
       double heightCm = convertFeetInchesToCm(heightFeet, heightInches);
-      double weightKg = convertPoundsToKg(weightPounds);
 
       double bmi = weightKg / (heightCm * heightCm / 10000);
       setState(() {
@@ -66,10 +65,6 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
 
   double convertFeetInchesToCm(double feet, double inches) {
     return (feet * 30.48) + (inches * 2.54);
-  }
-
-  double convertPoundsToKg(double pounds) {
-    return pounds * 0.453592;
   }
 
   String getHealthCategory(double bmi) {
@@ -133,11 +128,11 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
             ),
             SizedBox(height: 20),
             TextField(
-              controller: weightPoundsController,
+              controller: weightKgController,
               keyboardType: TextInputType.number,
               style: TextStyle(fontSize: 20),
               decoration: InputDecoration(
-                labelText: 'Enter Weight (lbs)',
+                labelText: 'Enter Weight (kg)',
                 labelStyle: TextStyle(fontSize: 18),
                 border: OutlineInputBorder(),
               ),
@@ -159,6 +154,22 @@ class _BMICalculatorScreenState extends State<BMICalculatorScreen> {
                 ? Text(
               errorMessage!,
               style: TextStyle(fontSize: 18, color: Colors.red),
+            )
+                : Container(),
+            SizedBox(height: 20),
+            bmiResult != null && healthCategory != null
+                ? Column(
+              children: [
+                Text(
+                  'BMI Result: ${bmiResult!.toStringAsFixed(2)}',
+                  style: TextStyle(fontSize: 18),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Health Category: $healthCategory',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ],
             )
                 : Container(),
           ],
